@@ -1,0 +1,33 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: http://localhost:8001/api/v1/namespaces?labelSelector=pagethis=true
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Length:
+      - '404'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 27 Sep 2017 13:09:38 GMT
+    body:
+      encoding: UTF-8
+      string: |
+        {"kind":"NamespaceList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces","resourceVersion":"11999604"},"items":[{"metadata":{"name":"mick","selfLink":"/api/v1/namespaces/mick","uid":"4ee5d5de-a382-11e7-bd26-02420ac00305","resourceVersion":"11999525","creationTimestamp":"2017-09-27T12:49:32Z","labels":{"monitoring_prefix": "sbppmick", "pagethis":"true"}},"spec":{"finalizers":["kubernetes"]},"status":{"phase":"Active"}}]}
+    http_version: 
+  recorded_at: Wed, 27 Sep 2017 13:09:38 GMT
+recorded_with: VCR 3.0.3

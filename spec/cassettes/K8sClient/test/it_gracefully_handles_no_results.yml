@@ -1,0 +1,33 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: http://localhost:8001/api/v1/namespaces?labelSelector=pagethis=false
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Length:
+      - '126'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 22 Nov 2016 11:18:34 GMT
+    body:
+      encoding: UTF-8
+      string: |
+        {"kind":"NamespaceList","apiVersion":"v1","metadata":{"selfLink":"/api/v1/namespaces","resourceVersion":"718172"},"items":[]}
+    http_version: 
+  recorded_at: Tue, 22 Nov 2016 11:18:34 GMT
+recorded_with: VCR 3.0.3
