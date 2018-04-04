@@ -271,26 +271,37 @@ class K8sClient
   end
 
   def pod_group_name pod
-    return nil if (
-        pod['metadata']['annotations'].nil? ||
-        pod['metadata']['annotations']['kubernetes.io/created-by'].nil?
-    )
-
-    p = JSON.load(pod['metadata']['annotations']['kubernetes.io/created-by'])
-
-    return nil if (
-        p['reference'].nil? ||
-        p['reference']['kind'].nil? ||
-        p['reference']['name'].nil?
-    )
-
+    kind      = ""
+    name      = ""
     namespace = pod['metadata']['namespace']
-    kind = p['reference']['kind'].downcase
-    name = p['reference']['name'].downcase
+
+    # Kubernetes >= v1.9.x uses .metadata.ownerReferences to determine object owner
+    if (not pod['metadata']['ownerReferences'].nil?)
+      kind = pod['metadata']['ownerReferences'][0]['kind'].downcase
+      name = pod['metadata']['ownerReferences'][0]['name'].downcase
+
+    # Kubernetes < v1.9.x relies on an annotation to determine object owner
+    else
+      return nil if (
+          pod['metadata']['annotations'].nil? ||
+          pod['metadata']['annotations']['kubernetes.io/created-by'].nil?
+      )
+
+      p = JSON.load(pod['metadata']['annotations']['kubernetes.io/created-by'])
+
+      return nil if (
+          p['reference'].nil? ||
+          p['reference']['kind'].nil? ||
+          p['reference']['name'].nil?
+      )
+
+      kind = p['reference']['kind'].downcase
+      name = p['reference']['name'].downcase
+    end
 
     return nil if not ['replicationcontroller', 'replicaset', 'daemonset', 'petset', 'statefulset'].include? kind
 
-    if kind != 'petset'
+    if not ['petset', 'daemonset'].include? kind
       name = name.rpartition('-')[0..-2][0]
     end
     "#{namespace}_#{name}_#{kind}"
