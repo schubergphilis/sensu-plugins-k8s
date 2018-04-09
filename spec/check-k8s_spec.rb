@@ -846,7 +846,7 @@ describe K8sClient do
       expect(@k8s.pod_group_name(pod)).to eql(nil)
     end
     it 'it parses pods created by known objects correctly' do
-      for kind in ['ReplicationController', 'ReplicaSet', 'DaemonSet', 'StatefulSet'] do
+      for kind in ['ReplicationController', 'ReplicaSet', 'StatefulSet'] do
         pod =
           {
           "metadata" => {
@@ -859,6 +859,75 @@ describe K8sClient do
         }
         expect(@k8s.pod_group_name(pod)).to eql("mick_nginx-deployment_#{kind.downcase}")
       end
+    end
+    it 'it parses pods created by ReplicaSet with ownerReference properly' do
+      pod = {
+        "metadata" => {
+          "namespace" => "default",
+          "generateName" => "php-apache-7ccc68c5cd-",
+          "ownerReferences" => [
+            {
+              "kind" => "ReplicaSet",
+              "name" => "php-apache-7ccc68c5cd"
+            }
+          ]
+        }
+      }
+      expect(@k8s.pod_group_name(pod)).to eql("default_php-apache_replicaset")
+    end
+    it 'it parses pods created by DaemonSet with dashes with ownerReference properly' do
+      pod = {
+        "metadata" => {
+          "namespace" => "default",
+          "generateName" => "rook-ceph-osd-",
+          "ownerReferences" => [
+            {
+              "kind" => "DaemonSet",
+              "name" => "rook-ceph-osd"
+            }
+          ]
+        }
+      }
+      expect(@k8s.pod_group_name(pod)).to eql("default_rook-ceph-osd_daemonset")
+    end
+    it 'it parses pods created by DaemonSet without dashes with ownerReference properly' do
+      pod = {
+        "metadata" => {
+          "namespace" => "default",
+          "generateName" => "rookcephosd-",
+          "ownerReferences" => [
+            {
+              "kind" => "DaemonSet",
+              "name" => "rookcephosd"
+            }
+          ]
+        }
+      }
+      expect(@k8s.pod_group_name(pod)).to eql("default_rookcephosd_daemonset")
+    end
+    it 'it parses pods created by DaemonSet with dashes without ownerReference properly' do
+      pod = {
+        "metadata" => {
+          "namespace" => "logging",
+          "generateName" => "fk8-splunk-",
+          "annotations" => {
+            "kubernetes.io/created-by" => "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"DaemonSet\",\"namespace\":\"logging\",\"name\":\"fk8-splunk\",\"uid\":\"29a510de-269e-11e8-afa5-02420ac0030f\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"1073027426\"}}\n"
+          }
+        }
+      }
+      expect(@k8s.pod_group_name(pod)).to eql("logging_fk8-splunk_daemonset")
+    end
+    it 'it parses pods created by DaemonSet without dashes without ownerReference properly' do
+      pod = {
+        "metadata" => {
+          "namespace" => "logging",
+          "generateName" => "fk8splunk-",
+          "annotations" => {
+            "kubernetes.io/created-by" => "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"DaemonSet\",\"namespace\":\"logging\",\"name\":\"fk8splunk\",\"uid\":\"29a510de-269e-11e8-afa5-02420ac0030f\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"1073027426\"}}\n"
+          }
+        }
+      }
+      expect(@k8s.pod_group_name(pod)).to eql("logging_fk8splunk_daemonset")
     end
     it 'counts the total pods running' do
       @k8s.get_pod_count
